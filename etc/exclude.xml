@@ -1,0 +1,7 @@
+
+<FindBugsFilter>
+  <Match>
+    <Class name="org.jvfs.dummyfiles.LocationTest" />
+    <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
+  </Match>
+</FindBugsFilter>

@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# dummy -- quick and dirty (albeit heavily-commented) script to run
+#  the dummy-files application.
+
+# This will optionally run "ant compile", which builds a bunch of class
+# files in the "out" directory.  (If you don't enable that option, we
+# assume it's because you've already run ant.)
+
+# libraries -- hard-coded.
+libs="log4j-api-2.6.2.jar log4j-core-2.6.2.jar"
+
+# The script should be runnable from anywhere.  Stash the current location
+# to come back to it.
+startdir=${PWD}
+
+# Figure out where the script lives.  That tells us the project's root directory.
+proj=`dirname $0`
+cd ${proj}/..
+proj=${PWD}
+
+if [ -n "$1" ]
+then
+  if [ "$1" = "-build" ]
+  then
+    shift
+    ant compile || exit 2
+  fi
+fi
+
+# Return to where we started
+cd $startdir
+
+# Library files are downloaded in here
+libdir=${proj}/lib
+
+CLASSPATH=${proj}/dist/DummyFiles.jar
+for lib in ${libs}
+do
+  CLASSPATH=${CLASSPATH}':'${libdir}/${lib}
+done
+export CLASSPATH
+
+java org.jvfs.dummyfiles.Launcher $*
