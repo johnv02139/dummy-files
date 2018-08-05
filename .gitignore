@@ -1,0 +1,9 @@
+/out/
+/dist/
+/lib/
+/docs/
+
+/.gradle/
+
+/commit.log
+/diff.diff
