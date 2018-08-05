@@ -3,6 +3,9 @@
 /lib/
 /docs/
 
+/.idea/workspace.xml
+/.idea/tasks.xml
+
 /.gradle/
 
 /commit.log
