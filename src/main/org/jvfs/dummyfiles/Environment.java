@@ -15,6 +15,7 @@ public final class Environment {
 
     public static final int BAD_ARGUMENTS         = -65;
 
+    public static final int NO_PARSE_CMD_LINE     = -99;
     public static final int NO_APP_SPECIFIED      = -98;
     public static final int UNKNOWN_APP_SPECIFIED = -97;
 

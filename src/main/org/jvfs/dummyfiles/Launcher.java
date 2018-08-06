@@ -2,10 +2,15 @@ package org.jvfs.dummyfiles;
 
 import static org.jvfs.dummyfiles.Environment.*;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,11 +37,11 @@ class Launcher {
         /**
          * Creates an instance of ApplicationParameters.
          *
-         * @param args
+         * @param cmdLine
          *    whatever the user passes on the command line
          */
-        ApplicationParameters(final String[] args) {
-            List<String> allOptions = Arrays.asList(args);
+        ApplicationParameters(final CommandLine cmdLine) {
+            List<String> allOptions = cmdLine.getArgList();
             if (allOptions.size() == 0) {
                 logger.warn("must specify an application");
                 appName = null;
@@ -81,6 +86,20 @@ class Launcher {
     }
 
     /**
+     * Declines to run a program; tries to inform the user.
+     *
+     * @param error
+     *    the ParseException that prevents us from running
+     * @return
+     *    an error status for the VM to exit with
+     */
+    @SuppressWarnings("SameReturnValue")
+    private static int fail(final ParseException error) {
+        logger.log(Level.WARN, "Command-line parsing failed", error);
+        return NO_PARSE_CMD_LINE;
+    }
+
+    /**
      * Runs a program and returns its exit status.
      *
      * <p>This is essentially the main method of the application, but since
@@ -92,11 +111,19 @@ class Launcher {
      *    an exit status for the VM
      */
     private static int run(final String[] args) {
-        ApplicationParameters app = new ApplicationParameters(args);
-        if (app.appName == null) {
-            return NO_APP_SPECIFIED;
+        Options options = new Options();
+        CommandLineParser parser = new DefaultParser();
+        try {
+            final CommandLine line = parser.parse(options, args);
+            final ApplicationParameters app = new ApplicationParameters(line);
+            if (app.appName == null) {
+                return NO_APP_SPECIFIED;
+            }
+            return app.run();
+        } catch (ParseException pe) {
+            // oops, something went wrong
+            return fail(pe);
         }
-        return app.run();
     }
 
     /**
