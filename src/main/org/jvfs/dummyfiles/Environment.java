@@ -1,5 +1,11 @@
 package org.jvfs.dummyfiles;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
 /**
  * Provides information about the environment.
  *
@@ -9,6 +15,7 @@ package org.jvfs.dummyfiles;
  * values that may be shared between other classes.
  */
 public final class Environment {
+    private static final Logger logger = Logger.getLogger(Environment.class.getName());
 
     public static final int NUM_DIRECTORIES_GUESS_DEFAULT =  128;
     public static final int NUM_FILES_GUESS_DEFAULT       = 1024;
@@ -29,6 +36,7 @@ public final class Environment {
     public static final int COULD_NOT_CREATE_HTML = 1500;
 
     public static final String TMP_DIR_NAME = System.getProperty("java.io.tmpdir");
+    public static final String USER_HOME = System.getProperty("user.home");
     private static final String OS_NAME = System.getProperty("os.name");
 
     public static final String MIRROR = "mirror";
@@ -74,6 +82,47 @@ public final class Environment {
 
     private static final OSType JVM_OS_TYPE = chooseOSType();
     public static final boolean IS_WINDOWS = (JVM_OS_TYPE == OSType.WINDOWS);
+
+    // If InputStream.read() fails, it returns -1.  So, anything less than zero is
+    // clearly a failure.  But we assume a version must at least be "x.y", so let's
+    // call anything less than three bytes a fail.
+    private static final int MIN_BYTES_FOR_VERSION = 3;
+
+    /**
+     * Reads the version number from the version file.
+     *
+     * @return
+     *   the version number read from the version file
+     */
+    static String readVersionNumber() {
+        byte[] buffer = new byte[10];
+        // Release env (jar)
+        InputStream versionStream = Environment.class.getResourceAsStream("/dummyfiles.version");
+        // Dev env
+        if (versionStream == null) {
+            versionStream = Environment.class.getResourceAsStream("/src/main/dummyfiles.version");
+        }
+
+        int bytesRead = -1;
+        try {
+            bytesRead = versionStream.read(buffer);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Exception when reading version file", e);
+            // Has to be unchecked exception as in static block, otherwise
+            // exception isn't actually handled (mainly for junit in ant)
+            throw new RuntimeException("Exception when reading version file", e);
+        } finally {
+            try {
+                versionStream.close();
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Exception trying to close version file", ioe);
+            }
+        }
+        if (bytesRead < MIN_BYTES_FOR_VERSION) {
+            throw new RuntimeException("Unable to extract version from version file");
+        }
+        return Utilities.makeString(buffer).trim();
+    }
 
     /**
      * Prevents instantiation.

@@ -20,7 +20,7 @@ import java.util.List;
  * Mirror -- creates a file tree with "fake" files.
  *
  */
-class Mirror {
+public class Mirror {
     private static final Logger logger = LogManager.getFormatterLogger(Mirror.class);
 
     /**
