@@ -69,6 +69,9 @@ class Launcher {
             if (appName.equals(MIRROR)) {
                 return Mirror.createMirror(appOptions);
             }
+            if (appName.equals(RESTORE)) {
+                return DummyFiles.restoreToOriginalNames(appOptions);
+            }
             logger.warn("unknown application specified: %s", appName);
             return UNKNOWN_APP_SPECIFIED;
         }

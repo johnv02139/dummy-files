@@ -10,14 +10,22 @@ package org.jvfs.dummyfiles;
  */
 public final class Environment {
 
+    public static final int NUM_DIRECTORIES_GUESS_DEFAULT =  128;
+    public static final int NUM_FILES_GUESS_DEFAULT       = 1024;
+
     public static final int BAD_ARGUMENTS         = -65;
 
     public static final int NO_APP_SPECIFIED      = -98;
     public static final int UNKNOWN_APP_SPECIFIED = -97;
 
+    public static final int REWRITE_PATH_INVALID  = -130;
+    public static final int EXCEPTION_DESCENDING  = -131;
+    public static final int EXCEPTION_RESTORING   = -132;
+
     private static final String OS_NAME = System.getProperty("os.name");
 
     public static final String MIRROR = "mirror";
+    public static final String RESTORE = "restore";
 
     /**
      * A convenient way to know which operating system is being used.
