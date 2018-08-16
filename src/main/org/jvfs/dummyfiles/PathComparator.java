@@ -193,4 +193,18 @@ final class PathComparator implements Comparator<Path>, Serializable {
         Path p2 = Paths.get(s2);
         return verifyMirror(p1, p2);
     }
+
+    /**
+     * Runs a hard-coded test.
+     *
+     * @return
+     *    always returns zero
+     */
+    public static int doTest() {
+        Environment.initializeLogger();
+        PathComparator pc = new PathComparator();
+        pc.verifyMirror("/Users/valentej/Movies/Videos/TV",
+                        "/Users/valentej/Documents/VC/dw");
+        return 0;
+    }
 }
