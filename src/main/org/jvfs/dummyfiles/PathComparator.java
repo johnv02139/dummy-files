@@ -121,18 +121,35 @@ final class PathComparator implements Comparator<Path>, Serializable {
         // The one-arg version of "isRegularFile" follows any symbolic links.
         // So, this means, "is a regular file, or is a symlink to a regular file".
         if (Files.isRegularFile(p1)) {
-            return Files.isRegularFile(p2);
+            boolean success = Files.isRegularFile(p2);
+            if (!success) {
+                System.out.printf("regular file vs non-regular: %s, %s%n", p1, p2);
+                return false;
+            } else {
+                return true;
+            }
         }
         List<Path> p1Children = listChildren(p1);
         if (p1Children == null) {
+            System.out.printf("could not list children of %s%n", p1);
             return false;
         }
         List<Path> p2Children = listChildren(p2);
         if (p2Children == null) {
+            System.out.printf("could not list children of %s%n", p2);
             return false;
         }
         int size = p1Children.size();
         if (size != p2Children.size()) {
+            System.out.printf("children of dirs were not same size: %d and %d%n", size, p2Children.size());
+            System.out.printf("p1 children:%n");
+            for (Path child : p1Children) {
+                System.out.printf("  %s%n", child);
+            }
+            System.out.printf("p2 children:%n");
+            for (Path child : p2Children) {
+                System.out.printf("  %s%n", child);
+            }
             return false;
         }
         for (int i = 0; i < size; i++) {
@@ -142,6 +159,7 @@ final class PathComparator implements Comparator<Path>, Serializable {
             String s2 = pathNameOnDisk(c2);
             // Compare file names
             if (s1.compareTo(s2) != 0) {
+                System.out.printf("filenames were not equivalent: %s and %s%n", p1, p2);
                 return false;
             }
             // recursive call
