@@ -141,7 +141,8 @@ final class PathComparator implements Comparator<Path>, Serializable {
         }
         int size = p1Children.size();
         if (size != p2Children.size()) {
-            System.out.printf("children of dirs were not same size: %d and %d%n", size, p2Children.size());
+            System.out.printf("children of dirs were not same size: %d and %d%n",
+                              size, p2Children.size());
             System.out.printf("p1 children:%n");
             for (Path child : p1Children) {
                 System.out.printf("  %s%n", child);

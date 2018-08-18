@@ -4,4 +4,9 @@
     <Class name="org.jvfs.dummyfiles.LocationTest" />
     <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
   </Match>
+  <Match>
+    <Class name="org.jvfs.dummyfiles.UtilitiesTest" />
+    <Method name="testUnmodifiableMap" />
+    <Bug pattern="DE_MIGHT_IGNORE" />
+  </Match>
 </FindBugsFilter>

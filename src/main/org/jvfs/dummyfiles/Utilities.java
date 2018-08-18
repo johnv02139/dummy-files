@@ -9,6 +9,9 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Utility class containing convenience methods for operating on Strings and
@@ -22,6 +25,27 @@ import java.nio.file.Paths;
 @SuppressWarnings("SameParameterValue")
 final class Utilities {
     private static final Logger logger = LogManager.getFormatterLogger(Utilities.class);
+
+    public static final Map<Character, String> SANITISE
+        = Collections.unmodifiableMap(new HashMap<Character, String>()
+        {
+            // provide a replacement for anything that's not valid in Windows
+            // this list is: \ / : * ? " < > |
+            // see http://msdn.microsoft.com/en-us/library/aa365247%28VS.85%29.aspx
+            // for more information
+            {
+                put('\\', "-"); // replace backslash with hyphen
+                put('/', "-");  // replace forward slash with hyphen
+                put(':', "-");  // replace colon with a hyphen
+                put('|', "-");  // replace vertical bar with hyphen
+                put('*', "-");  // replace asterisk with hyphen
+                put('?', "");   // remove question marks
+                put('<', "");   // remove less-than symbols
+                put('>', "");   // remove greater-than symbols
+                put('"', "'");  // replace double quote with apostrophe
+                put('`', "'");  // replace backquote with apostrophe
+            }
+        });
 
     /**
      * Return true if the given arguments refer to the same actual, existing
@@ -75,6 +99,52 @@ final class Utilities {
             return false;
         }
         return Files.exists(dir);
+    }
+
+    /**
+     * See javadoc for public method {@link #replaceIllegalCharacters(String)}.
+     *
+     * <p>This helper method operates only on the specified portion of the
+     * string, and ignores (strips away) anything that comes before the start
+     * or after the end.
+     *
+     * @param title the original string, which may contain illegal characters
+     * @param start the index of the first character to consider
+     * @param end the index of the last character to consider
+     * @return a version of the substring, from start to end, of the original
+     *    string, which contains no illegal characters
+     */
+    private static String replaceIllegalCharacters(final String title,
+                                                   final int start,
+                                                   final int end)
+    {
+        StringBuilder sanitised = new StringBuilder(end + 1);
+        for (int i = start; i <= end; i++) {
+            char c = title.charAt(i);
+            String replace = SANITISE.get(c);
+            if (replace == null) {
+                sanitised.append(c);
+            } else {
+                sanitised.append(replace);
+            }
+        }
+        return sanitised.toString();
+    }
+
+    /**
+     * Replaces characters which are not permitted in file paths.
+     *
+     * <p>Certain characters cannot be included in file or folder names.
+     * How illegal characters are handled actually depends on the particular
+     * character.  Some are simply stripped away, others are replaced with a
+     * hyphen or apostrophe.
+     *
+     * @param title the original string, which may contain illegal characters
+     * @return a version of the original string which contains no illegal
+     *    characters
+     */
+    public static String replaceIllegalCharacters(final String title) {
+        return replaceIllegalCharacters(title, 0, title.length() - 1);
     }
 
     /**
