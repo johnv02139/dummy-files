@@ -174,49 +174,4 @@ public class UtilitiesTest {
         assertTrue("file from ensureWritableDirectory is a directory",
                    Files.isDirectory(dirpath));
     }
-
-    /**
-     * Simply tests that we can access the Map defined in Utilities.java.
-     */
-    @Test
-    public void testAccessibleMap() {
-        assertEquals("-", SANITISE.get('/'));
-    }
-
-    /**
-     * Tests that we cannot modify the Map defined in Utilities.java.
-     */
-    @Test
-    public void testUnmodifiableMap() {
-        try {
-            SANITISE.put('/', "_");
-            fail("was able to modify map that is supposed to be unmodifiable");
-        } catch (Exception e) {
-            // expected result
-        }
-    }
-
-    /**
-     * Tests replacement of illegal characters that are not permitted in
-     * (Windows) file paths.
-     */
-    @Test
-    public void testReplaceCharacters() {
-        assertEquals("Test-", replaceIllegalCharacters("Test\\"));
-        assertEquals("Test-", replaceIllegalCharacters("Test/"));
-        assertEquals("Test-", replaceIllegalCharacters("Test:"));
-        assertEquals("Test-", replaceIllegalCharacters("Test|"));
-        assertEquals("Test-", replaceIllegalCharacters("Test*"));
-        assertEquals("Test", replaceIllegalCharacters("Test?"));
-        assertEquals("Test", replaceIllegalCharacters("Test>"));
-        assertEquals("Test", replaceIllegalCharacters("Test<"));
-        assertEquals("Test'", replaceIllegalCharacters("Test\""));
-        assertEquals("Test'", replaceIllegalCharacters("Test`"));
-        assertEquals("", replaceIllegalCharacters(""));
-
-        // Whitespace should not be changed; it is not illegal.
-        assertEquals("  Test \n", replaceIllegalCharacters("  <Test> \n"));
-        assertEquals("   ", replaceIllegalCharacters("   "));
-        assertEquals(" \tTest Two ", replaceIllegalCharacters(" \t<Test Two> "));
-    }
 }
