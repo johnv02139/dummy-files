@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.Arrays;
@@ -367,5 +368,34 @@ public class SampleTrees {
      */
     public SampleTrees(final TemporaryFolder tempRoot) throws IOException {
         this(tempRoot, true);
+    }
+
+    /**
+     * Runs a program.
+     *
+     * <p>Exits the VM with the exit status returned by the program.
+     *
+     * @param args
+     *    whatever the user provided on the command line
+     */
+    public static void main(String[] args) {
+        Path dir1 = Paths.get("/Users/valentej/Documents/JVFS/tmp/mydir");
+        FileTime timestamp = FileTime.from(Instant.now());
+        System.out.printf("creating...%n");
+        boolean success = createSampleTree(dir1, timestamp, true);
+        if (success) {
+            System.out.printf("flattening...%n");
+            success = Utilities.flattenAndRename("jv", dir1);
+            if (success) {
+                System.out.printf("flattened tree%n");
+            } else {
+                System.out.printf("failed to flatten sample tree%n");
+                System.exit(-1);
+            }
+        } else {
+            System.out.printf("failed to create sample tree%n");
+            System.exit(-2);
+        }
+        System.exit(0);
     }
 }
