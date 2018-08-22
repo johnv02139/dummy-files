@@ -22,11 +22,17 @@ public final class Environment {
     public static final int EXCEPTION_DESCENDING  = -131;
     public static final int EXCEPTION_RESTORING   = -132;
 
+    // This value is used in a context where a small positive number
+    // could indicate an actual error count; so it should be large
+    // enough that it could not be confused with an actual count.
+    public static final int COULD_NOT_CREATE_HTML = 1500;
+
     public static final String TMP_DIR_NAME = System.getProperty("java.io.tmpdir");
     private static final String OS_NAME = System.getProperty("os.name");
 
     public static final String MIRROR = "mirror";
     public static final String RESTORE = "restore";
+    public static final String REPORT = "report";
 
     /**
      * A convenient way to know which operating system is being used.

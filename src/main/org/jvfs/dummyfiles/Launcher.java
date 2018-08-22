@@ -72,6 +72,9 @@ class Launcher {
             if (appName.equals(RESTORE)) {
                 return DummyFiles.restoreToOriginalNames(appOptions);
             }
+            if (appName.equals(REPORT)) {
+                return DummyFiles.reportOnFiles(appOptions);
+            }
             logger.warn("unknown application specified: %s", appName);
             return UNKNOWN_APP_SPECIFIED;
         }

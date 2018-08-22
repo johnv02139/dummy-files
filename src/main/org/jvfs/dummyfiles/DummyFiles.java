@@ -3,6 +3,7 @@ package org.jvfs.dummyfiles;
 import static org.jvfs.dummyfiles.Environment.*;
 import static org.jvfs.dummyfiles.Location.combinePaths;
 import static org.jvfs.dummyfiles.Reporting.DF_CHARSET;
+import static org.jvfs.dummyfiles.Reporting.produceHtmlReport;
 import static org.jvfs.dummyfiles.Utilities.creatableDirectory;
 import static org.jvfs.dummyfiles.Utilities.getReadableDirectory;
 import static org.jvfs.dummyfiles.Utilities.isSameFile;
@@ -13,11 +14,13 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.awt.Desktop;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
@@ -231,6 +234,59 @@ class DummyFiles {
     }
 
     /**
+     * Fill in a list with reports on the changed files.
+     *
+     * @param reportList
+     *   a list, which should initially be empty, which will be filled in
+     *   by this method with FileReports
+     * @return
+     *   the number of errors encountered in processing the files.
+     */
+    public int makeFileReport(List<FileReport> reportList) {
+        processBasepath();
+        int nErrors = 0;
+        for (Path file : subFiles) {
+            FileReport report = new FileReport(basepath, file);
+            if (report.hasError) {
+                ++nErrors;
+            } else if (report.isIgnore) {
+                logger.info("ignoring " + file);
+            } else {
+                reportList.add(report);
+            }
+        }
+        return nErrors;
+    }
+
+    /**
+     * Output a report on the changed files.
+     *
+     * @return
+     *   the number of errors encountered in processing the files, or a code
+     *   indicating the type of error that occurred.
+     */
+    private int viewHtmlReport() {
+        List<FileReport> reportList = new ArrayList<>();
+        int nErrors = makeFileReport(reportList);
+        if (nErrors == 0) {
+            Path outfile = produceHtmlReport(reportList);
+            if (outfile == null) {
+                return COULD_NOT_CREATE_HTML;
+            }
+            try {
+                Desktop.getDesktop().browse(outfile.toUri());
+                return 0;
+            } catch (IOException ioe) {
+                logger.log(Level.WARN, "error opening HTML file " + outfile,
+                           ioe);
+                nErrors++;
+            }
+        }
+
+        return nErrors;
+    }
+
+    /**
      * Instantiates an object that collects status of previously created dummy
      * files and can be used to report on their status or to restore them to
      * their original names and relative locations.
@@ -263,6 +319,25 @@ class DummyFiles {
      */
     private DummyFiles(final String dummyDir) {
         this(dummyDir, dummyDir);
+    }
+
+    /**
+     * Report on the dummy files.
+     *
+     * @param args
+     *    arguments to specify files
+     * @return
+     *    0 on success, non-zero for failure
+     */
+    public static int reportOnFiles(final List<String> args) {
+        int nArgs = args.size();
+        // TODO: process flags, use third-party package
+        if (nArgs != 1) {
+            usage(REPORT, args);
+            return BAD_ARGUMENTS;
+        }
+        DummyFiles restorer = new DummyFiles(args.get(0));
+        return restorer.viewHtmlReport();
     }
 
     /**
