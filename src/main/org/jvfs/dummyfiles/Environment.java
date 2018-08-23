@@ -22,6 +22,7 @@ public final class Environment {
     public static final int EXCEPTION_DESCENDING  = -131;
     public static final int EXCEPTION_RESTORING   = -132;
 
+    public static final String TMP_DIR_NAME = System.getProperty("java.io.tmpdir");
     private static final String OS_NAME = System.getProperty("os.name");
 
     public static final String MIRROR = "mirror";
