@@ -112,7 +112,7 @@ class DummyFiles {
      *   false if the contents look like a "dummy file" created by this program;
      *   true if they do not
      */
-    private static boolean isIgnoreFile(final String content) {
+    public static boolean isIgnoreFile(final String content) {
         // These are the test files that are created by
         //   a previous, less fully-featured script.
         return content.startsWith("content");
