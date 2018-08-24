@@ -317,7 +317,7 @@ class DummyFiles {
      *    the current location of the files; if they will be moved by this
      *    object, it will be within this same directory
      */
-    private DummyFiles(final String dummyDir) {
+    public DummyFiles(final String dummyDir) {
         this(dummyDir, dummyDir);
     }
 
