@@ -24,6 +24,60 @@ final class Utilities {
     private static final Logger logger = LogManager.getFormatterLogger(Utilities.class);
 
     /**
+     * Return true if the given arguments refer to the same actual, existing
+     * file on the file system.
+     *
+     * <p>Note that on file systems that support symbolic links, two Paths could
+     * be the same file even if their locations appear completely different.
+     *
+     * @param path1
+     *    first Path to compare; it is expected that this Path exists
+     * @param path2
+     *    second Path to compare; this may or may not exist
+     * @return
+     *    true if the paths refer to the same file, false if they don't;
+     *    logs an exception if one occurs while trying to check, including
+     *    if path1 does not exist; but does not log one if path2 doesn't
+     */
+    @SuppressWarnings("SimplifiableIfStatement")
+    public static boolean isSameFile(final Path path1, final Path path2) {
+        try {
+            if (Files.notExists(path2)) {
+                return false;
+            }
+            return Files.isSameFile(path1, path2);
+        } catch (IOException ioe) {
+            logger.log(Level.WARN, "exception checking files "
+                       + path1 + " and " + path2, ioe);
+            return false;
+        }
+    }
+
+    /**
+     * Creates a directory by creating all nonexistent parent directories first.
+     * No exception is thrown if the directory could not be created because it
+     * already exists.
+     *
+     * <p>If this method fails, then it may do so after creating some, but not
+     * all, of the parent directories.
+     *
+     * @param dir - the directory to create
+     * @return
+     *    true if the the directory exists at the conclusion of this method:
+     *    that is, true if the directory already existed, or if we created it;
+     *    false if it we could not create the directory
+     */
+    public static boolean mkdirs(final Path dir) {
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException ioe) {
+            logger.log(Level.WARN, "exception trying to create directory " + dir, ioe);
+            return false;
+        }
+        return Files.exists(dir);
+    }
+
+    /**
      * If the given String names a readable directory, returns it as a Path.
      *
      * @param dirname
@@ -117,6 +171,86 @@ final class Utilities {
         }
 
         return true;
+    }
+
+    /**
+     * Returns a Path's nearest existing ancestor.
+     *
+     * <p>Given a Path, if the Path exists, returns it.  If not, but its parent
+     * exists, returns that, etc.  That is, returns the closest ancestor
+     * (including itself) that exists.
+     *
+     * @param checkPath the path to check for the closest existing ancestor
+     * @return the longest path, from the root dir towards the given path,
+     *   that exists
+     */
+    private static Path existingAncestor(final Path checkPath) {
+        if (checkPath == null) {
+            logger.info("check path is null");
+            return null;
+        }
+        Path fullPath = checkPath.toAbsolutePath();
+        logger.info("full path is %s", fullPath);
+        Path root = fullPath.getRoot();
+        if (root == null) {
+            logger.info("root is null");
+            return null;
+        }
+        Path existent = fullPath;
+        while (Files.notExists(existent)) {
+            if (root.equals(existent)) {
+                logger.info("root (%s) does not exist", root);
+                // Presumably, this can't happen, because it suggests
+                // the root dir doesn't exist, which doesn't make sense.
+                // But just to be sure to avoid an infinite iteration...
+                return null;
+            }
+            existent = existent.getParent();
+            if (existent == null) {
+                logger.info("came up with null from %s", fullPath);
+                return null;
+            }
+        }
+
+        return existent;
+    }
+
+    /**
+     * Returns a creatable path if the argument names one.
+     *
+     * <p>Takes the name of a Path which is a directory that the user may want
+     * to write into.  If the given String names a creatable directory, returns
+     * it as a Path.
+     *
+     * <p>Does not actually create the directory.
+     *
+     * @param destDirName
+     *    the name (a String) of the Path that the caller will want to write into
+     * @return the path as a Path object if, in fact, it names a creatable
+     *    directory; null -- in addition to logging the specific error -- if not.
+     *
+     *    As an example, if the value is /Users/me/Files/PDFs/Work, and no such
+     *    file exists, we just keep going up the tree until something exists.
+     *    If we find /Users/me/Files exists, and it's a writable directory, then
+     *    presumably we could create a "PDFs" directory in it, and "Work" in
+     *    that, thereby creating the directory.  But if /Users/me/Files is not a
+     *    directory, or is not writable, then we know we cannot create the
+     *    target, and so we return false.
+     *
+     */
+    public static Path creatableDirectory(final String destDirName) {
+        if (destDirName == null) {
+            logger.warn("received null directory name");
+            return null;
+        }
+        Path destDir = Paths.get(destDirName);
+        Path ancestor = existingAncestor(destDir);
+        if (isWritableDirectory(ancestor)) {
+            return destDir;
+        } else {
+            logger.warn("%s could not be created", destDirName);
+            return null;
+        }
     }
 
     /**
